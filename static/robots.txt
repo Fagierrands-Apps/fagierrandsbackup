@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /api/accounts/
+Disallow: /api/dashboard/
+Allow: /api/docs/
+Allow: /swagger/
+Allow: /redoc/
+Sitemap: https://errandserver.fagitone.com/sitemap.xml

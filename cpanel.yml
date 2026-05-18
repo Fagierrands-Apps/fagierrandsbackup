@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home3/distinc3/fagiserver.fagtone.com/fagierrandsbackup/
+    - /bin/rsync -amv --exclude='.git*' --exclude='venv*' --exclude='__pycache__*' * $DEPLOYPATH
+    - /bin/touch /home3/distinc3/fagiserver.fagtone.com/fagierrandsbackup/tmp/restart.txt

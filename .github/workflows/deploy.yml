@@ -1,0 +1,43 @@
+name: Deploy Backend to cPanel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.CPANEL_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Sync Code to cPanel
+      run: |
+        rsync -avz --delete \
+          --exclude='.git' \
+          --exclude='.github' \
+          --exclude='venv' \
+          --exclude='__pycache__' \
+          --exclude='*.pyc' \
+          --exclude='*.sqlite3' \
+          --exclude='staticfiles' \
+          --exclude='media' \
+          --exclude='.env' \
+          -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+          ./ ${{ secrets.CPANEL_USERNAME }}@${{ secrets.CPANEL_HOST }}:/home3/distinc3/fagiserver.fagtone.com/fagierrandsbackup/
+
+    - name: Restart Python App
+      run: |
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
+          ${{ secrets.CPANEL_USERNAME }}@${{ secrets.CPANEL_HOST }} \
+          "touch /home3/distinc3/fagiserver.fagtone.com/tmp/restart.txt"

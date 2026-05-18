@@ -11,33 +11,22 @@ jobs:
     steps:
     - name: Checkout Source Code
       uses: actions/checkout@v4
+
+    - name: Deploy via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
-        fetch-depth: 0
-
-    - name: Setup SSH Key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.CPANEL_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
-
-    - name: Sync Code to cPanel
-      run: |
-        rsync -avz --delete \
-          --exclude='.git' \
-          --exclude='.github' \
-          --exclude='venv' \
-          --exclude='__pycache__' \
-          --exclude='*.pyc' \
-          --exclude='*.sqlite3' \
-          --exclude='staticfiles' \
-          --exclude='media' \
-          --exclude='.env' \
-          -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
-          ./ ${{ secrets.CPANEL_USERNAME }}@${{ secrets.CPANEL_HOST }}:/home3/distinc3/fagiserver.fagtone.com/fagierrandsbackup/
-
-    - name: Restart Python App
-      run: |
-        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
-          ${{ secrets.CPANEL_USERNAME }}@${{ secrets.CPANEL_HOST }} \
-          "touch /home3/distinc3/fagiserver.fagtone.com/tmp/restart.txt"
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        server-dir: /fagiserver.fagtone.com/fagierrandsbackup/
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/__pycache__/**
+          **/*.pyc
+          **/*.sqlite3
+          **/venv/**
+          **/staticfiles/**
+          **/media/**
+          **/.env

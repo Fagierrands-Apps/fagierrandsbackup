@@ -18,7 +18,7 @@ jobs:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        server-dir: /fagiserver.fagtone.com/
+        server-dir: /fagiserver.fagtone.com/fagierrandsbackup/
         exclude: |
           **/.git*
           **/.git*/**

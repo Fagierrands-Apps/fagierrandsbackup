@@ -1,0 +1,2 @@
+Deployment test at 15:31 - Testing correct directory deployment
+This file should appear in /home3/distinc3/fagiserver.fagtone.com/

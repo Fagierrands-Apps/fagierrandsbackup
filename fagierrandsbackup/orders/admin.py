@@ -621,50 +621,54 @@ class OrderAdmin(admin.ModelAdmin):
             messages.error(request, 'openpyxl is not installed. Run: pip install openpyxl')
             return
         
-        from django.http import HttpResponse
-        
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Orders"
-        
-        # Headers
-        headers = ['ID', 'Title', 'Client', 'Assistant', 'Order Type', 'Status', 
-                   'Price', 'Pickup Address', 'Delivery Address', 'Contact', 
-                   'Created At', 'Completed At']
-        ws.append(headers)
-        
-        # Style headers
-        for cell in ws[1]:
-            cell.font = Font(bold=True)
-        
-        # Data rows
-        for order in queryset:
-            ws.append([
-                order.id,
-                order.title,
-                order.client.get_full_name() or order.client.username,
-                order.assistant.get_full_name() if order.assistant else '',
-                order.order_type.name if order.order_type else '',
-                order.get_status_display(),
-                float(order.price) if order.price else 0,
-                order.pickup_address or '',
-                order.delivery_address or '',
-                order.contact_number or '',
-                order.created_at.strftime('%Y-%m-%d %H:%M:%S') if order.created_at else '',
-                order.completed_at.strftime('%Y-%m-%d %H:%M:%S') if order.completed_at else '',
-            ])
-        
-        # Adjust column widths
-        for col in ws.columns:
-            ws.column_dimensions[col[0].column_letter].width = 20
-        
-        response = HttpResponse(
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = 'attachment; filename="orders_export.xlsx"'
-        wb.save(response)
-        
-        return response
+        try:
+            from django.http import HttpResponse
+            
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Orders"
+            
+            # Headers
+            headers = ['ID', 'Title', 'Client', 'Assistant', 'Order Type', 'Status', 
+                       'Price', 'Pickup Address', 'Delivery Address', 'Contact', 
+                       'Created At', 'Completed At']
+            ws.append(headers)
+            
+            # Style headers
+            for cell in ws[1]:
+                cell.font = Font(bold=True)
+            
+            # Data rows
+            for order in queryset:
+                ws.append([
+                    order.id,
+                    order.title,
+                    order.client.get_full_name() or order.client.username,
+                    order.assistant.get_full_name() if order.assistant else '',
+                    order.order_type.name if order.order_type else '',
+                    order.get_status_display(),
+                    float(order.price) if order.price else 0,
+                    order.pickup_address or '',
+                    order.delivery_address or '',
+                    order.contact_number or '',
+                    order.created_at.strftime('%Y-%m-%d %H:%M:%S') if order.created_at else '',
+                    order.completed_at.strftime('%Y-%m-%d %H:%M:%S') if order.completed_at else '',
+                ])
+            
+            # Adjust column widths
+            for col in ws.columns:
+                ws.column_dimensions[col[0].column_letter].width = 20
+            
+            response = HttpResponse(
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename="orders_export.xlsx"'
+            wb.save(response)
+            
+            return response
+        except Exception as e:
+            messages.error(request, f'Export failed: {str(e)}')
+            return
     
     export_orders_to_excel.short_description = "Export selected orders to Excel"
 

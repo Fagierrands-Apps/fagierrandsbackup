@@ -56,6 +56,8 @@ from .views_quotes import (
     HandymanOrderQuotesView, QuoteImageUploadView, ServiceProviderDashboardView,
     quote_status_check
 )
+# Import export view
+from .export_views import ExportOrderView
 
 urlpatterns = [
     # Existing order endpoints
@@ -152,5 +154,8 @@ urlpatterns = [
     # Price calculation endpoints
     path('calculate-price/', PriceCalculationView.as_view(), name='calculate-price'),
     path('<int:pk>/update_price_realtime/', OrderPriceRealtimeUpdateView.as_view(), name='order-price-realtime-update'),
+    
+    # Export endpoint
+    path('<int:pk>/export/', ExportOrderView.as_view(), name='order-export'),
 ]
 

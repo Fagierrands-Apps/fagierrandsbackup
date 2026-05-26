@@ -2,18 +2,29 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 from django.http import HttpResponse
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment
 from .models import Order
 import logging
 
 logger = logging.getLogger(__name__)
+
+try:
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, Alignment
+    OPENPYXL_AVAILABLE = True
+except ImportError:
+    OPENPYXL_AVAILABLE = False
 
 
 class ExportOrderView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
+        if not OPENPYXL_AVAILABLE:
+            return Response(
+                {"error": "Excel export not available. Install openpyxl package."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+        
         try:
             order = Order.objects.select_related(
                 'client', 'assistant', 'handler', 'order_type',

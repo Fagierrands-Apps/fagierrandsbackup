@@ -614,8 +614,13 @@ class OrderAdmin(admin.ModelAdmin):
     
     def export_orders_to_excel(self, request, queryset):
         """Export selected orders to Excel"""
-        from openpyxl import Workbook
-        from openpyxl.styles import Font
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Font
+        except ImportError:
+            messages.error(request, 'openpyxl is not installed. Run: pip install openpyxl')
+            return
+        
         from django.http import HttpResponse
         
         wb = Workbook()

@@ -391,36 +391,28 @@ GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 GROQ_MODEL = os.environ.get('GROQ_MODEL', 'llama-3.1-8b-instant')
 
 # Email settings - Using SMTP for email verification
-# Configure for Brevo (free SMTP service) - 300 emails/day free
-# To use Brevo: 
-# 1. Sign up at https://www.brevo.com/
-# 2. Go to SMTP & API > SMTP
-# 3. Create SMTP key and set environment variables:
-#    EMAIL_HOST_USER=your-brevo-email@example.com
-#    EMAIL_HOST_PASSWORD=your-smtp-key
+# Brevo SMTP service - 300 emails/day free tier
+# Setup: https://www.brevo.com/ → SMTP & API → Create SMTP key
 
-# SMTP Configuration for Real Email Sending - BREVO
+# SMTP Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-# Brevo SMTP Settings (can be overridden via environment)
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp-relay.brevo.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False') == 'True'
 
-# SMTP Credentials (use environment in production)
-# IMPORTANT: Update these with your actual Brevo credentials
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'smtp-relay.brevo.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # SECURITY: Must be set in environment
+# SMTP Credentials - REQUIRED in cPanel environment variables
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 
-# Default sender address
-# IMPORTANT: Ensure this email is verified in your Brevo account settings
+# Default sender - must be verified in Brevo account
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@fagitone.com')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
-# Log email backend for development/debugging
-if DEBUG:
-    EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+# Development: Use console backend if DEBUG=True and no password set
+if DEBUG and not EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    logger.warning("Email backend set to console (no EMAIL_HOST_PASSWORD in DEBUG mode)")
 
 # Alternative: Use Gmail SMTP (if you prefer)
 # EMAIL_HOST = 'smtp.gmail.com'
@@ -448,30 +440,15 @@ WEBPUSH_EMAIL = os.environ.get('WEBPUSH_EMAIL', 'admin@fagierrands.com')
 # Firebase Cloud Messaging settings
 FCM_SERVER_KEY = os.environ.get('FCM_SERVER_KEY', '')
 
-# NCBA Till API settings
+# NCBA Till API settings (Primary payment provider)
 BASE_URL = os.environ.get('BASE_URL', 'https://errandserver.fagitone.com')
-NCBA_USERNAME = os.environ.get('NCBA_USERNAME', '').strip()
-NCBA_PASSWORD = os.environ.get('NCBA_PASSWORD', '').strip()
-NCBA_PAYBILL_NO = os.environ.get('NCBA_PAYBILL_NO', '').strip()
-NCBA_TILL_NO = os.environ.get('NCBA_TILL_NO', '').strip()
-NCBA_TRANSACTION_TYPE = os.environ.get('NCBA_TRANSACTION_TYPE', 'CustomerPayBillOnline').strip()
-NCBA_USE_TILL_AS_ACCOUNT = os.environ.get('NCBA_USE_TILL_AS_ACCOUNT', 'False').strip().upper() == 'TRUE'
+NCBA_USERNAME = os.environ.get('NCBA_USERNAME', '')
+NCBA_PASSWORD = os.environ.get('NCBA_PASSWORD', '')
+NCBA_PAYBILL_NO = os.environ.get('NCBA_PAYBILL_NO', '880100')
+NCBA_TILL_NO = os.environ.get('NCBA_TILL_NO', '')
+NCBA_TRANSACTION_TYPE = os.environ.get('NCBA_TRANSACTION_TYPE', 'CustomerPayBillOnline')
+NCBA_USE_TILL_AS_ACCOUNT = os.environ.get('NCBA_USE_TILL_AS_ACCOUNT', 'False').upper() == 'TRUE'
 NCBA_CALLBACK_URL = f"{BASE_URL}/api/orders/payments/ncba/callback/"
-
-# Legacy M-Pesa settings (maintained for backward compatibility)
-MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'production')
-MPESA_CONSUMER_KEY = os.environ['MPESA_CONSUMER_KEY']
-MPESA_CONSUMER_SECRET = os.environ['MPESA_CONSUMER_SECRET']
-MPESA_SHORTCODE = os.environ['MPESA_SHORTCODE']
-MPESA_PASSKEY = os.environ['MPESA_PASSKEY']
-MPESA_PARTYB_SHORTCODE = os.environ['MPESA_PARTYB_SHORTCODE']
-
-# Legacy M-Pesa Callback URLs
-MPESA_STK_CALLBACK_URL = f"{BASE_URL}/api/orders/payments/mpesa/stk-callback/"
-MPESA_C2B_VALIDATION_URL = f"{BASE_URL}/api/orders/payments/mpesa/c2b-validation/"
-MPESA_C2B_CONFIRMATION_URL = f"{BASE_URL}/api/orders/payments/mpesa/c2b-confirmation/"
-MPESA_B2C_RESULT_URL = f"{BASE_URL}/api/orders/payments/mpesa/b2c-result/"
-MPESA_B2C_TIMEOUT_URL = f"{BASE_URL}/api/orders/payments/mpesa/b2c-timeout/"
 
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://fagierrands.com')
 

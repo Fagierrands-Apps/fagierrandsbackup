@@ -96,19 +96,21 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.middleware.gzip.GZipMiddleware',  # Compress responses to reduce bandwidth
+    'django.middleware.gzip.GZipMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'fagierrandsbackup.middleware.BlockInsecureMethodsMiddleware',  # Block TRACE/TRACK/DEBUG
-    'fagierrandsbackup.middleware.CorsMiddleware',  # Our custom CORS middleware (first)
-    'corsheaders.middleware.CorsMiddleware',  # Django CORS headers middleware (backup)
+    'fagierrandsbackup.middleware.RateLimitMiddleware',  # Rate limiting (first)
+    'fagierrandsbackup.middleware.BlockInsecureMethodsMiddleware',
+    'fagierrandsbackup.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.http.ConditionalGetMiddleware',  # ETag/Last-Modified handling
+    'django.middleware.http.ConditionalGetMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'fagierrandsbackup.error_monitoring.LiveErrorMonitoringMiddleware',  # Live error monitoring
+    'fagierrandsbackup.middleware.SafeWSGIMiddleware',  # WSGI error handling
+    'fagierrandsbackup.error_monitoring.LiveErrorMonitoringMiddleware',
 ]
 
 # Use cookie-based sessions to avoid DB access in serverless
@@ -128,6 +130,11 @@ CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY'
+
+# Additional Security Headers
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+CSRF_COOKIE_SAMESITE = 'Strict'
 
 ROOT_URLCONF = 'fagierrandsbackup.urls'
 
@@ -266,11 +273,14 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/hour',
-        'user': '1000/hour'
+        'anon': '30/hour',      # Reduced from 100
+        'user': '300/hour',     # Reduced from 1000
+        'auth': '5/minute',     # New: Auth endpoints
+        'payment': '10/hour',   # New: Payment endpoints
     }
 }
 

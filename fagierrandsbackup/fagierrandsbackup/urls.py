@@ -4,6 +4,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
+from django.views.generic import RedirectView
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from django.views.static import serve
@@ -31,6 +32,7 @@ def robots_txt(request):
 
 urlpatterns = [
     path('robots.txt', robots_txt),
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=True)),
     path('', deployment_check_view, name='root'),  # Root URL for deployment check
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.urls')),

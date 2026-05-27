@@ -135,6 +135,11 @@ X_FRAME_OPTIONS = 'DENY'
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
 CSRF_COOKIE_SAMESITE = 'Strict'
+PERMISSIONS_POLICY = {
+    'geolocation': ['self'],
+    'camera': [],
+    'microphone': [],
+}
 
 ROOT_URLCONF = 'fagierrandsbackup.urls'
 
@@ -513,6 +518,11 @@ LOGGING = {
         },
         'django': {
             'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['console', 'email_admin'],
             'level': 'WARNING',
             'propagate': False,
         },

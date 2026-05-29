@@ -7,19 +7,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-try:
-    from openpyxl import Workbook
-    from openpyxl.styles import Font, Alignment
-    OPENPYXL_AVAILABLE = True
-except ImportError:
-    OPENPYXL_AVAILABLE = False
-
 
 class ExportOrderView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
-        if not OPENPYXL_AVAILABLE:
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Font, Alignment
+        except ImportError:
             return Response(
                 {"error": "Excel export not available. Install openpyxl package."},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE

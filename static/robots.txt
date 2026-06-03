@@ -5,4 +5,4 @@ Disallow: /api/dashboard/
 Allow: /api/docs/
 Allow: /swagger/
 Allow: /redoc/
-Sitemap: https://errandserver.fagitone.com/sitemap.xml
+Sitemap: https://fagierrandsbackup.fagierrands.com/sitemap.xml

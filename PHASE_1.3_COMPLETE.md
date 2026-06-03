@@ -258,7 +258,7 @@ print(f"Success: {success}, Message: {message}")
 ### Test 3: Full Registration Flow
 ```bash
 # Use Postman or curl
-curl -X POST https://errandserver.fagitone.com/api/accounts/register/ \
+curl -X POST https://fagierrandsbackup.fagierrands.com/api/accounts/register/ \
   -H "Content-Type: application/json" \
   -d '{
     "email": "your-email@example.com",

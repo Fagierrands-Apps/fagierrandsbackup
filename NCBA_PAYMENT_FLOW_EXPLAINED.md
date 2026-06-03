@@ -174,7 +174,7 @@ print(result)
 ### Test 3: Frontend integration
 ```bash
 # Use Postman or curl:
-curl -X POST https://errandserver.fagitone.com/api/orders/payments/ncba/initiate \
+curl -X POST https://fagierrandsbackup.fagierrands.com/api/orders/payments/ncba/initiate \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{
@@ -200,7 +200,7 @@ curl -X POST https://errandserver.fagitone.com/api/orders/payments/ncba/initiate
 **Cause:** Callback URL not registered with NCBA
 **Fix:** Contact NCBA to register:
 ```
-https://errandserver.fagitone.com/api/orders/payments/ncba/callback/
+https://fagierrandsbackup.fagierrands.com/api/orders/payments/ncba/callback/
 ```
 
 ### Issue 4: "Invalid till number"

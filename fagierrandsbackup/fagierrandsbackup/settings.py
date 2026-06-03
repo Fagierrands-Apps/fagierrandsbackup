@@ -55,15 +55,12 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get(
     'ALLOWED_HOSTS',
-    'errandserver.fagitone.com,www.errandserver.fagitone.com,fagiserver.fagtone.com,fagierrand.fagitone.com,localhost,127.0.0.1,testserver'
+    'fagierrandsbackup.fagierrands.com,localhost,127.0.0.1,testserver'
 ).split(',')]
 
 # CSRF
 CSRF_TRUSTED_ORIGINS = [
-    'https://fagierrands-server.onrender.com',
-    'https://errandserver.fagitone.com',
-    'https://www.errandserver.fagitone.com',
-    'https://fagiserver.fagtone.com',
+    'https://fagierrandsbackup.fagierrands.com',
 ]
 
 # Application definition
@@ -321,9 +318,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://fagierrands-x9ow.vercel.app',
     'https://fagierrands.vercel.app',
     'https://fagierrand.fagitone.com',
-    'https://errandserver.fagitone.com',
-    'https://www.errandserver.fagitone.com',
-    'https://fagiserver.fagtone.com',
+    'https://fagierrandsbackup.fagierrands.com',
 ]
 
 # For older browsers that don't support CORS_ALLOWED_ORIGINS
@@ -331,9 +326,7 @@ CORS_ORIGIN_WHITELIST = [
     'https://fagierrands-x9ow.vercel.app',
     'https://fagierrands.vercel.app',
     'https://fagierrand.fagitone.com',
-    'https://errandserver.fagitone.com',
-    'https://www.errandserver.fagitone.com',
-    'https://fagiserver.fagtone.com',
+    'https://fagierrandsbackup.fagierrands.com',
 ]
 
 # Allow requests from any subdomain of vercel.app
@@ -456,7 +449,7 @@ WEBPUSH_EMAIL = os.environ.get('WEBPUSH_EMAIL', 'admin@fagierrands.com')
 FCM_SERVER_KEY = os.environ.get('FCM_SERVER_KEY', '')
 
 # NCBA Till API settings (Primary payment provider)
-BASE_URL = os.environ.get('BASE_URL', 'https://errandserver.fagitone.com')
+BASE_URL = os.environ.get('BASE_URL', 'https://fagierrandsbackup.fagierrands.com')
 NCBA_USERNAME = os.environ.get('NCBA_USERNAME', '')
 NCBA_PASSWORD = os.environ.get('NCBA_PASSWORD', '')
 NCBA_PAYBILL_NO = os.environ.get('NCBA_PAYBILL_NO', '880100')

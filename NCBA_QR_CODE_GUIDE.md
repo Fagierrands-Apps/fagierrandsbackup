@@ -348,7 +348,7 @@ pdf = generate_qr_poster(500, "Consultation Fee")
 
 ### Test 1: Generate QR via API
 ```bash
-curl -X POST https://errandserver.fagitone.com/api/orders/payments/ncba/qr-generate/ \
+curl -X POST https://fagierrandsbackup.fagierrands.com/api/orders/payments/ncba/qr-generate/ \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

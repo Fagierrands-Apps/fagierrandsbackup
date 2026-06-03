@@ -15,10 +15,16 @@ jobs:
     - name: Deploy via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
+        # Hostname only — no ftp:// prefix. Use cPanel → FTP Accounts → FTP Server.
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        server-dir: /fagiserver.fagtone.com/
+        protocol: ftps
+        port: 21
+        # Relative to FTP login home (/home3/distinc3/), not a public URL
+        server-dir: fagiserver.fagtone.com/
+        log-level: verbose
+        timeout: 120000
         exclude: |
           **/.git*
           **/.git*/**

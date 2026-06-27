@@ -3,6 +3,9 @@ set -o errexit
 
 echo "🚀 Starting Render deployment..."
 
+# Navigate to Django project directory
+cd fagierrandsbackup
+
 # Install dependencies
 pip install -r requirements.txt
 

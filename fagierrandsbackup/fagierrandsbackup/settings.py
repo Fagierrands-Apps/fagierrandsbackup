@@ -101,6 +101,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'fagierrandsbackup.middleware.RateLimitMiddleware',  # Rate limiting (first)
+    'fagierrandsbackup.logging_middleware.ComprehensiveLoggingMiddleware',  # Logging
     'fagierrandsbackup.middleware.BlockInsecureMethodsMiddleware',
     'fagierrandsbackup.middleware.CorsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -508,12 +509,34 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {funcName} {lineno} {message}',
             'style': '{',
         },
+        'json': {
+            'format': '{levelname} {asctime} {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/app.log',
+            'formatter': 'detailed',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/error.log',
+            'formatter': 'detailed',
+        },
+        'security_file': {
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/security.log',
+            'formatter': 'json',
         },
         'email_admin': {
             'level': 'ERROR',
@@ -522,27 +545,37 @@ LOGGING = {
         },
     },
     'root': {
-        'handlers': ['console', 'email_admin'],
+        'handlers': ['console', 'file'],
         'level': 'INFO',
     },
     'loggers': {
         'orders': {
-            'handlers': ['console', 'email_admin'],
+            'handlers': ['console', 'file', 'email_admin'],
             'level': 'INFO',
             'propagate': False,
         },
         'accounts': {
-            'handlers': ['console', 'email_admin'],
+            'handlers': ['console', 'file', 'email_admin'],
             'level': 'INFO',
             'propagate': False,
         },
+        'security': {
+            'handlers': ['console', 'security_file', 'email_admin'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'error': {
+            'handlers': ['console', 'error_file', 'email_admin'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
         'django': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
             'level': 'WARNING',
             'propagate': False,
         },
         'django.security': {
-            'handlers': ['console', 'email_admin'],
+            'handlers': ['console', 'security_file', 'email_admin'],
             'level': 'WARNING',
             'propagate': False,
         },

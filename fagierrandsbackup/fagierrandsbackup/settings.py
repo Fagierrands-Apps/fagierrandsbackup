@@ -178,33 +178,48 @@ WSGI_APPLICATION = 'fagierrandsbackup.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# ============================================
+# DATABASE CONFIGURATION
+# ============================================
+# Two options supported:
+#
+# OPTION 1 (Render/Heroku): Use DATABASE_URL environment variable
+# OPTION 2 (cPanel): Use individual PG_* environment variables
+#
+# The code will automatically detect which method to use.
+# ============================================
 
-#DATABASES = {
-        #'default': {
-            #'ENGINE': 'django.db.backends.sqlite3',
-            #'NAME': BASE_DIR / 'db.sqlite3',
-        #}
-    #}
-
-# Database configuration tuned for serverless environments to prevent connection exhaustion
-# Prefer DATABASE_URL from environment; default to Supabase transaction pooler (6544)
 import dj_database_url
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ['PG_DB_NAME'],
-        "USER": os.environ['PG_USER'],
-        "PASSWORD": os.environ['PG_PASSWORD'],
-        "HOST": os.environ['PG_HOST'],
-        "PORT": os.environ.get('PG_PORT', '5432'),
-        "CONN_MAX_AGE": 600,  # Keep connections alive for 10 minutes
-        "OPTIONS": {
-            "connect_timeout": 10,
-            "options": "-c statement_timeout=30000"  # 30 second query timeout
-        }
-    },
-}
+# Check which database configuration method to use
+if os.environ.get('DATABASE_URL'):
+    # ===== RENDER/HEROKU DEPLOYMENT =====
+    # Uses DATABASE_URL (e.g., postgresql://user:pass@host:5432/dbname)
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ['DATABASE_URL'],
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # ===== CPANEL DEPLOYMENT =====
+    # Uses individual PG_* environment variables
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ['PG_DB_NAME'],
+            "USER": os.environ['PG_USER'],
+            "PASSWORD": os.environ['PG_PASSWORD'],
+            "HOST": os.environ['PG_HOST'],
+            "PORT": os.environ.get('PG_PORT', '5432'),
+            "CONN_MAX_AGE": 600,  # Keep connections alive for 10 minutes
+            "OPTIONS": {
+                "connect_timeout": 10,
+                "options": "-c statement_timeout=30000"  # 30 second query timeout
+            }
+        },
+    }
 
 
 # Custom user model

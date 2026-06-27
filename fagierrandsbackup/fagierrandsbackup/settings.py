@@ -18,16 +18,25 @@ def validate_environment():
     Validate that all critical environment variables are set.
     Raises ImproperlyConfigured if any required variable is missing.
     """
-    required_vars = [
-        'SECRET_KEY',
-        'PG_DB_NAME',
-        'PG_USER',
-        'PG_PASSWORD',
-        'PG_HOST',
-        'SUPABASE_URL',
-        'SUPABASE_SERVICE_ROLE_KEY',
-        'EMAIL_HOST_PASSWORD',
-    ]
+    # For Render deployment, allow DATABASE_URL instead of PG_* variables
+    if os.environ.get('DATABASE_URL'):
+        required_vars = [
+            'SECRET_KEY',
+            'SUPABASE_URL',
+            'SUPABASE_SERVICE_ROLE_KEY',
+            'EMAIL_HOST_PASSWORD',
+        ]
+    else:
+        required_vars = [
+            'SECRET_KEY',
+            'PG_DB_NAME',
+            'PG_USER',
+            'PG_PASSWORD',
+            'PG_HOST',
+            'SUPABASE_URL',
+            'SUPABASE_SERVICE_ROLE_KEY',
+            'EMAIL_HOST_PASSWORD',
+        ]
     
     missing = [var for var in required_vars if not os.environ.get(var)]
     

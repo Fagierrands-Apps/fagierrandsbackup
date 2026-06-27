@@ -18,3 +18,4 @@ dj-database-url
 django-filter
 channels
 whitenoise
+djangorestframework-simplejwt

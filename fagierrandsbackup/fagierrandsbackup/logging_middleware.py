@@ -28,7 +28,7 @@ class ComprehensiveLoggingMiddleware(MiddlewareMixin):
     
     def get_user_info(self, request):
         """Get user information"""
-        if request.user and request.user.is_authenticated:
+        if hasattr(request, 'user') and request.user and request.user.is_authenticated:
             return {
                 'user_id': request.user.id,
                 'username': request.user.username,

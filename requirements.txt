@@ -1,0 +1,13 @@
+Django>=4.2,<5.0
+djangorestframework
+django-cors-headers
+psycopg[binary]
+python-dotenv
+drf-yasg
+Pillow
+requests
+supabase
+cloudinary
+groq
+openpyxl
+python-magic==0.4.27

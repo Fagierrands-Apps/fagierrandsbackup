@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
 from .models import OrderType, Order, ShoppingItem, OrderImage, OrderReview, CargoDeliveryDetails, Payment, ServiceQuote, QuoteImage
+from .pricing import validate_order_price, calculate_distance_price
 from accounts.serializers import UserSerializer
 from accounts.models import User
 from locations.serializers import LocationSerializer
@@ -230,9 +231,9 @@ class PickupDeliveryOrderSerializer(serializers.Serializer):
     
     def validate(self, data):
         """
-        Perform additional cross-field validation
+        Perform additional cross-field validation including price validation
         """
-        # If we have latitude/longitude, make sure they are valid
+        # Validate coordinates
         if data.get('pickup_latitude') is not None and data.get('pickup_longitude') is not None:
             if not (-90 <= data['pickup_latitude'] <= 90):
                 raise serializers.ValidationError({"pickup_latitude": "Latitude must be between -90 and 90"})
@@ -244,6 +245,27 @@ class PickupDeliveryOrderSerializer(serializers.Serializer):
                 raise serializers.ValidationError({"delivery_latitude": "Latitude must be between -90 and 90"})
             if not (-180 <= data['delivery_longitude'] <= 180):
                 raise serializers.ValidationError({"delivery_longitude": "Longitude must be between -180 and 180"})
+        
+        # ✅ SERVER-SIDE PRICE VALIDATION (prevent manipulation)
+        if data.get('price') and data.get('distance') and data.get('order_type'):
+            order_type_name = data['order_type'].name if hasattr(data['order_type'], 'name') else str(data['order_type'])
+            
+            validation_data = {
+                'order_type': order_type_name,
+                'distance': data['distance'],
+                'price': data['price'],
+                'shopping_items': data.get('shopping_items', [])
+            }
+            
+            validation = validate_order_price(validation_data, tolerance_percent=2)
+            
+            if not validation['valid']:
+                raise serializers.ValidationError({
+                    'price': validation['error'] + f" Correct price: KSh {validation['calculated_price']}"
+                })
+            
+            # Use server-calculated price (prevents any rounding manipulation)
+            data['price'] = validation['calculated_price']
         
         return data
 

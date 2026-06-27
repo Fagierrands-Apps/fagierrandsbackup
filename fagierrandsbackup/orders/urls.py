@@ -50,6 +50,7 @@ from .views_payment_ncba import (
 from .views_handyman_payment import HandymanServiceFinalPaymentView
 
 # Import quote management views
+from .pricing_views import PricingCalculatorView, PricingInfoView
 from .views_quotes import (
     ServiceProviderQuoteListView, ServiceProviderQuoteDetailView,
     SubmitQuoteView, HandlerQuoteManagementView, ApproveRejectQuoteView,
@@ -60,6 +61,10 @@ from .views_quotes import (
 from .export_views import ExportOrderView
 
 urlpatterns = [
+    # Pricing endpoints
+    path('pricing/calculate/', PricingCalculatorView.as_view(), name='pricing-calculate'),
+    path('pricing/info/', PricingInfoView.as_view(), name='pricing-info'),
+
     # Existing order endpoints
     path('types/', OrderTypeListView.as_view(), name='order-type-list'),
     path('', OrderListCreateView.as_view(), name='order-list-create'),

@@ -14,3 +14,4 @@ python-magic==0.4.27
 celery
 redis
 gunicorn
+dj-database-url

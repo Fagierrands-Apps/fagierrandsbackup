@@ -1,4 +1,5 @@
 from django.db import models
+from accounts.file_validators import validate_image_upload
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.contrib.postgres.indexes import GinIndex
@@ -11,7 +12,7 @@ User = get_user_model()
 class OrderType(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField()
-    icon = models.ImageField(upload_to='order_types/', null=True, blank=True)
+    icon = models.ImageField(upload_to='order_types/', null=True, blank=True, validators=[validate_image_upload])
     base_price = models.DecimalField(max_digits=10, decimal_places=2, default=200.00)
     price_per_km = models.DecimalField(max_digits=10, decimal_places=2, default=20.00)
     min_price = models.DecimalField(max_digits=10, decimal_places=2, default=200.00)
@@ -303,7 +304,7 @@ class OrderImage(models.Model):
         ('receipt', 'Receipt'),
     )
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='order_images/')
+    image = models.ImageField(upload_to='order_images/', validators=[validate_image_upload])
     description = models.CharField(max_length=255, blank=True)
     stage = models.CharField(max_length=20, choices=STAGE_CHOICES, default='before')
     image_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='generic')
@@ -353,7 +354,7 @@ class CargoDeliveryDetails(models.Model):
 
 class Bank(models.Model):
     name = models.CharField(max_length=100)
-    logo = models.ImageField(upload_to='bank_logos/', null=True, blank=True)
+    logo = models.ImageField(upload_to='bank_logos/', null=True, blank=True, validators=[validate_image_upload])
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     
@@ -362,7 +363,7 @@ class Bank(models.Model):
     
 class Banks(models.Model):
     name = models.CharField(max_length=100)
-    logo = models.ImageField(upload_to='bank_logos/', null=True, blank=True)
+    logo = models.ImageField(upload_to='bank_logos/', null=True, blank=True, validators=[validate_image_upload])
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     
@@ -588,7 +589,7 @@ class ServiceQuote(models.Model):
 class QuoteImage(models.Model):
     """Images attached to quotes for better explanation"""
     quote = models.ForeignKey(ServiceQuote, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='quote_images/')
+    image = models.ImageField(upload_to='quote_images/', validators=[validate_image_upload])
     description = models.CharField(max_length=255, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
@@ -598,7 +599,7 @@ class QuoteImage(models.Model):
 class HandymanOrderImage(models.Model):
     """Model for storing images associated with handyman orders"""
     order = models.ForeignKey(HandymanOrder, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='handyman_images/')
+    image = models.ImageField(upload_to='handyman_images/', validators=[validate_image_upload])
     description = models.CharField(max_length=255, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     

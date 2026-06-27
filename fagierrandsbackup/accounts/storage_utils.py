@@ -4,6 +4,8 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from .supabase_client import get_supabase_client, VERIFICATION_BUCKET, is_supabase_available, ensure_bucket_exists
 from .mediafire_service import get_mediafire_service, is_mediafire_available
+from django.core.exceptions import ValidationError
+from .file_validators import validate_upload, sanitize_filename
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +33,18 @@ def upload_verification_image(file, user_id, file_type='verification'):
         logger.error("No file provided for upload")
         return False, None, "No file provided"
     
-    # Generate a unique filename
-    file_extension = os.path.splitext(file.name)[1]
-    filename = f"{user_id}_{file_type}_{file.name}"
+    # ✅ SECURITY: Validate file before processing
+    try:
+        validation_result = validate_upload(file, file_type='image')
+        safe_filename = validation_result['sanitized_name']
+        logger.info(f"File validation passed: {safe_filename}")
+    except ValidationError as e:
+        logger.error(f"File validation failed: {e}")
+        return False, None, str(e)
+    
+    # Generate a unique filename with sanitized name
+    file_extension = os.path.splitext(safe_filename)[1]
+    filename = f"{user_id}_{file_type}_{safe_filename}"
     
     logger.info(f"Generated filename: {filename}")
     logger.info(f"File size: {file.size} bytes")

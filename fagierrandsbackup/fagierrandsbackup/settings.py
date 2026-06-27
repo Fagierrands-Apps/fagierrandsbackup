@@ -2,9 +2,13 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
 
 # ============================================
 # ENVIRONMENT VARIABLE VALIDATION
@@ -184,6 +188,11 @@ DATABASES = {
         "PASSWORD": os.environ['PG_PASSWORD'],
         "HOST": os.environ['PG_HOST'],
         "PORT": os.environ.get('PG_PORT', '5432'),
+        "CONN_MAX_AGE": 600,  # Keep connections alive for 10 minutes
+        "OPTIONS": {
+            "connect_timeout": 10,
+            "options": "-c statement_timeout=30000"  # 30 second query timeout
+        }
     },
 }
 
@@ -230,6 +239,17 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Caching Configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'fagierrand-cache',
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000
+        }
+    }
+}
 
 # Map Configuration (for frontend use)
 MAP_CONFIG = {

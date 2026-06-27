@@ -342,42 +342,22 @@ SIMPLE_JWT = {
 CORS_ALLOW_ALL_ORIGINS = False  # Security: Only allow specific origins
 
 # Explicitly allowed origins
+# PRODUCTION ONLY - LOCKED TO 3 FRONTENDS ONLY
 CORS_ALLOWED_ORIGINS = [
-    # Production frontends
-    'https://fagierrands.com',  # Main user frontend
-    'https://www.fagierrands.com',  # www variant
-    'https://handler.fagierrands.com',  # Handler/Admin frontend
-    'https://fagierrands.fagitone.com',  # Old domain
-    'https://www.fagierrands.fagitone.com',  # www variant
-    'https://fagierrand.fagitone.com',  # Alternative spelling
-    'https://www.fagierrand.fagitone.com',  # www variant
-    # Development/Staging
-    'https://fagierrands-x9ow.vercel.app',
-    'https://fagierrands.vercel.app',
-    'https://fagierrandsbackup.fagierrands.com',
-    'http://localhost:3000',  # Local development
-    'http://localhost:5173',  # Vite local dev
+    'https://handler.fagierrands.com',   # Handler/Admin frontend
+    'https://fagierrands.com',           # Main user frontend  
+    'https://fagierrands.fagitone.com',  # Legacy domain
 ]
 
-# For older browsers that don't support CORS_ALLOWED_ORIGINS
+# For older browsers
 CORS_ORIGIN_WHITELIST = [
-    'https://fagierrands.com',
-    'https://www.fagierrands.com',
     'https://handler.fagierrands.com',
+    'https://fagierrands.com',
     'https://fagierrands.fagitone.com',
-    'https://www.fagierrands.fagitone.com',
-    'https://fagierrand.fagitone.com',
-    'https://www.fagierrand.fagitone.com',
-    'https://fagierrands-x9ow.vercel.app',
-    'https://fagierrands.vercel.app',
-    'https://fagierrandsbackup.fagierrands.com',
 ]
 
-# Allow requests from any subdomain of vercel.app
-CORS_ORIGIN_REGEX_WHITELIST = [
-    r"^https://.*\.vercel\.app$",
-    r"^https://.*\.fagierrands\.com$",  # All fagierrands.com subdomains
-]
+# NO WILDCARD - Disabled for security
+CORS_ORIGIN_REGEX_WHITELIST = []
 
 CORS_ALLOW_CREDENTIALS = True  # Allow credentials (cookies, authorization headers)
 

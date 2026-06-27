@@ -2207,3 +2207,43 @@ def handler_create_user(request):
         return Response({
             'error': f'Failed to create user: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# Token Logout View
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from .token_blacklist import blacklist_token, blacklist_refresh_token
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_view(request):
+    """
+    Logout user by blacklisting their token
+    
+    Body (optional):
+    {
+        "refresh": "refresh_token_here"
+    }
+    """
+    try:
+        # Get access token from request
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        if auth_header.startswith('Bearer '):
+            access_token = auth_header.split(' ')[1]
+            blacklist_token(access_token)
+        
+        # Blacklist refresh token if provided
+        refresh_token = request.data.get('refresh')
+        if refresh_token:
+            blacklist_refresh_token(refresh_token)
+        
+        return Response({
+            'message': 'Successfully logged out',
+            'detail': 'Token has been revoked'
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': 'Logout failed',
+            'detail': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)

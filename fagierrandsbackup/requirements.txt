@@ -17,3 +17,4 @@ gunicorn
 dj-database-url
 django-filter
 channels
+whitenoise

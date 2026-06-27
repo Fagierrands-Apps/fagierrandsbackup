@@ -11,3 +11,6 @@ cloudinary
 groq
 openpyxl
 python-magic==0.4.27
+celery
+redis
+gunicorn

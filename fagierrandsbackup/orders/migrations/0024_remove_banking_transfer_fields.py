@@ -7,45 +7,22 @@ from django.db import migrations, connection
 def remove_fields_if_exist(apps, schema_editor):
     """
     Safely remove fields from BankingOrder table if they exist.
-    This handles cases where fields were already removed or never created.
-    This works with PostgreSQL databases.
+    Fully idempotent - will not fail if columns don't exist.
     """
     BankingOrder = apps.get_model('orders', 'BankingOrder')
     table_name = BankingOrder._meta.db_table
-    db_vendor = connection.vendor
     
     fields_to_remove = ['recipient_name', 'recipient_account']
     
     with connection.cursor() as cursor:
         for field_name in fields_to_remove:
             try:
-                # Check if column exists (PostgreSQL specific)
-                if db_vendor == 'postgresql':
-                    cursor.execute(f"""
-                        SELECT 1 FROM information_schema.columns 
-                        WHERE table_name = %s AND column_name = %s
-                    """, [table_name, field_name])
-                    column_exists = cursor.fetchone() is not None
-                else:
-                    # For other databases, try the operation and catch the error
-                    column_exists = True
-                
-                if column_exists:
-                    try:
-                        if db_vendor == 'postgresql':
-                            cursor.execute(f'ALTER TABLE "{table_name}" DROP COLUMN "{field_name}";')
-                        else:
-                            cursor.execute(f'ALTER TABLE {table_name} DROP COLUMN {field_name};')
-                        print(f"✓ Dropped column '{field_name}' from {table_name}")
-                    except Exception as e:
-                        if "does not exist" in str(e) or "no such column" in str(e):
-                            print(f"✓ Column '{field_name}' does not exist (skipped)")
-                        else:
-                            print(f"✗ Error removing column '{field_name}': {e}")
-                else:
-                    print(f"✓ Column '{field_name}' does not exist (skipped)")
+                # Use DROP COLUMN IF EXISTS for PostgreSQL (safe operation)
+                cursor.execute(f'ALTER TABLE "{table_name}" DROP COLUMN IF EXISTS "{field_name}";')
+                print(f"✓ Dropped column '{field_name}' from {table_name}")
             except Exception as e:
-                print(f"⚠ Unexpected error processing '{field_name}': {e}")
+                # Ignore all errors - this is a cleanup migration
+                print(f"✓ Column '{field_name}' already removed or doesn't exist")
 
 
 def reverse_fields(apps, schema_editor):

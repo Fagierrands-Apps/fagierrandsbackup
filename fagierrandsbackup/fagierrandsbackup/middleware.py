@@ -8,29 +8,50 @@ logger = logging.getLogger(__name__)
 
 
 class RateLimitMiddleware:
-    """Block IPs making excessive requests"""
+    """Block IPs making excessive requests with endpoint-specific limits"""
     
     def __init__(self, get_response):
         self.get_response = get_response
-        self.max_requests = 100  # per minute
         self.block_duration = 3600  # 1 hour
+        
+        # Endpoint-specific rate limits (requests per minute)
+        self.limits = {
+            '/api/accounts/login/': 5,
+            '/api/accounts/register/': 10,
+            '/api/accounts/verify-email/': 10,
+            '/api/accounts/forgot-password/': 5,
+            '/api/accounts/reset-password/': 5,
+            '/api/orders/payment/': 20,
+            'default': 60
+        }
+    
+    def get_rate_limit(self, path):
+        """Get rate limit for specific path"""
+        for endpoint, limit in self.limits.items():
+            if endpoint in path:
+                return limit
+        return self.limits['default']
     
     def __call__(self, request):
         ip = self.get_client_ip(request)
+        path = request.path
         
         # Check if IP is blocked
         if cache.get(f'blocked_{ip}'):
             logger.warning(f"Blocked IP attempted access: {ip}")
             return HttpResponseForbidden("Too many requests. Try again later.")
         
-        # Count requests
-        cache_key = f'requests_{ip}'
+        # Get limit for this endpoint
+        max_requests = self.get_rate_limit(path)
+        
+        # Count requests for this IP and path
+        cache_key = f'requests_{ip}_{path}'
         requests = cache.get(cache_key, 0)
         
-        if requests > self.max_requests:
+        if requests > max_requests:
             cache.set(f'blocked_{ip}', True, self.block_duration)
-            logger.error(f"IP blocked for excessive requests: {ip} ({requests} requests)")
-            return HttpResponseForbidden("Rate limit exceeded. IP blocked for 1 hour.")
+            logger.error(f"IP blocked for excessive requests: {ip} on {path} ({requests} requests, limit: {max_requests})")
+            return HttpResponseForbidden(f"Rate limit exceeded. IP blocked for 1 hour.")
         
         # Increment counter
         cache.set(cache_key, requests + 1, 60)

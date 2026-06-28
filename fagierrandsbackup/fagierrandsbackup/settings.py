@@ -71,6 +71,31 @@ ALLOWED_HOSTS = [host.strip() for host in os.environ.get(
     'fagierrandsbackup.fagierrands.com,localhost,127.0.0.1,testserver'
 ).split(',')]
 
+# ============================================
+# PRODUCTION SECURITY SETTINGS
+# ============================================
+
+# Force HTTPS for all requests
+SECURE_SSL_REDIRECT = not DEBUG
+
+# Secure cookie settings
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# HSTS (HTTP Strict Transport Security)
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Additional security headers
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
+
 # CSRF
 CSRF_TRUSTED_ORIGINS = [
     'https://fagierrandsbackup.fagierrands.com',

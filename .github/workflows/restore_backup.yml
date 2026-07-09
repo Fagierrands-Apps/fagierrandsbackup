@@ -2,8 +2,8 @@ name: Restore DB Backup to Supabase Postgres
 
 on:
   schedule:
-    - cron: '30 0 * * *'  # runs daily at 00:30 UTC (after cPanel backup at midnight)
-  workflow_dispatch:        # allows manual trigger from GitHub Actions tab
+    - cron: '30 0 * * *'
+  workflow_dispatch:
 
 jobs:
   restore:
@@ -13,67 +13,50 @@ jobs:
       - name: Install psql
         run: sudo apt-get install -y postgresql-client
 
-      - name: Download latest backup from Supabase Storage
-        id: download
+      - name: Get latest backup filename
+        id: get_latest
         run: |
-          # Get list of backups and find the latest
-          RESPONSE=$(curl -s \
+          curl -s \
             "${{ secrets.SUPABASE_PROJECT_URL }}/storage/v1/object/list/db-backups" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"limit": 100, "sortBy": {"column": "created_at", "order": "desc"}}')
+            -d '{"limit": 100, "sortBy": {"column": "created_at", "order": "desc"}}' \
+            > /tmp/storage_list.json
 
-          echo "Storage API response: $RESPONSE"
+          cat /tmp/storage_list.json
 
-          LATEST=$(echo "$RESPONSE" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-files = data if isinstance(data, list) else data.get('items', data.get('objects', []))
+          LATEST=$(python3 -c "
+import json
+with open('/tmp/storage_list.json') as f:
+    data = json.load(f)
+files = data if isinstance(data, list) else []
 if not files:
-    print('ERROR: no files found', file=sys.stderr)
-    exit(1)
+    raise Exception('No backup files found')
 print(files[0]['name'])
 ")
-
-          echo "Latest backup: $LATEST"
+          echo "Latest: $LATEST"
           echo "filename=$LATEST" >> $GITHUB_OUTPUT
 
-          # Download the backup file
+      - name: Download backup from Supabase Storage
+        run: |
           curl -s \
-            "${{ secrets.SUPABASE_PROJECT_URL }}/storage/v1/object/db-backups/$LATEST" \
+            "${{ secrets.SUPABASE_PROJECT_URL }}/storage/v1/object/db-backups/${{ steps.get_latest.outputs.filename }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_KEY }}" \
             -o backup.sql.gz
-
-          echo "Download complete. Size: $(du -sh backup.sql.gz | cut -f1)"
+          echo "Downloaded: $(du -sh backup.sql.gz | cut -f1)"
 
       - name: Restore to Supabase Postgres
         run: |
           export PGPASSWORD="${{ secrets.SUPABASE_DB_PASSWORD }}"
-
-          echo "Resetting public schema..."
-          psql \
-            -h "${{ secrets.SUPABASE_DB_HOST }}" \
-            -p 5432 \
-            -U postgres \
-            -d postgres \
+          psql -h "${{ secrets.SUPABASE_DB_HOST }}" -p 5432 -U postgres -d postgres \
             -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-
-          echo "Restoring backup..."
           gunzip -c backup.sql.gz | psql \
-            -h "${{ secrets.SUPABASE_DB_HOST }}" \
-            -p 5432 \
-            -U postgres \
-            -d postgres
-
+            -h "${{ secrets.SUPABASE_DB_HOST }}" -p 5432 -U postgres -d postgres
           echo "Restore complete."
 
       - name: Verify restore
         run: |
           export PGPASSWORD="${{ secrets.SUPABASE_DB_PASSWORD }}"
-          TABLE_COUNT=$(psql \
-            -h "${{ secrets.SUPABASE_DB_HOST }}" \
-            -p 5432 \
-            -U postgres \
-            -d postgres \
+          TABLE_COUNT=$(psql -h "${{ secrets.SUPABASE_DB_HOST }}" -p 5432 -U postgres -d postgres \
             -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';" | xargs)
-          echo "Tables in Supabase Postgres after restore: $TABLE_COUNT"
+          echo "Tables restored: $TABLE_COUNT"

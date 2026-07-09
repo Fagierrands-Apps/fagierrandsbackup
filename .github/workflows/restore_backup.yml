@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Install psql
         run: sudo apt-get install -y postgresql-client
 
@@ -22,32 +25,23 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"limit": 100, "sortBy": {"column": "created_at", "order": "desc"}}' \
             > /tmp/storage_list.json
-
           cat /tmp/storage_list.json
+          python3 get_latest_backup.py > /tmp/latest.txt
+          cat /tmp/latest.txt
+          echo "filename=$(cat /tmp/latest.txt)" >> $GITHUB_OUTPUT
 
-          LATEST=$(python3 -c "
-import json
-with open('/tmp/storage_list.json') as f:
-    data = json.load(f)
-files = data if isinstance(data, list) else []
-if not files:
-    raise Exception('No backup files found')
-print(files[0]['name'])
-")
-          echo "Latest: $LATEST"
-          echo "filename=$LATEST" >> $GITHUB_OUTPUT
-
-      - name: Download backup from Supabase Storage
+      - name: Download backup
         run: |
           curl -s \
-            "${{ secrets.SUPABASE_PROJECT_URL }}/storage/v1/object/db-backups/${{ steps.get_latest.outputs.filename }}" \
+            "${{ secrets.SUPABASE_PROJECT_URL }}/storage/v1/object/db-backups/$(cat /tmp/latest.txt)" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_KEY }}" \
             -o backup.sql.gz
-          echo "Downloaded: $(du -sh backup.sql.gz | cut -f1)"
+          echo "Downloaded $(du -sh backup.sql.gz | cut -f1)"
 
       - name: Restore to Supabase Postgres
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
-          export PGPASSWORD="${{ secrets.SUPABASE_DB_PASSWORD }}"
           psql -h "${{ secrets.SUPABASE_DB_HOST }}" -p 5432 -U postgres -d postgres \
             -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
           gunzip -c backup.sql.gz | psql \
@@ -55,8 +49,9 @@ print(files[0]['name'])
           echo "Restore complete."
 
       - name: Verify restore
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
-          export PGPASSWORD="${{ secrets.SUPABASE_DB_PASSWORD }}"
           TABLE_COUNT=$(psql -h "${{ secrets.SUPABASE_DB_HOST }}" -p 5432 -U postgres -d postgres \
             -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';" | xargs)
           echo "Tables restored: $TABLE_COUNT"

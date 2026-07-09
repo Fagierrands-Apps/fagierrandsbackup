@@ -43,7 +43,7 @@ jobs:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
         run: |
-          DB_IP=$(python3 -c "import socket; print(socket.getaddrinfo('$SUPABASE_DB_HOST', 5432, socket.AF_INET)[0][4][0])")
+          DB_IP=$(python3 -c "import socket, os; print(socket.getaddrinfo(os.environ['SUPABASE_DB_HOST'], 5432, socket.AF_INET)[0][4][0])")
           echo "Resolved to IPv4: $DB_IP"
           psql -h "$DB_IP" -p 5432 -U postgres -d postgres \
             -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
@@ -56,7 +56,7 @@ jobs:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
         run: |
-          DB_IP=$(python3 -c "import socket; print(socket.getaddrinfo('$SUPABASE_DB_HOST', 5432, socket.AF_INET)[0][4][0])")
+          DB_IP=$(python3 -c "import socket, os; print(socket.getaddrinfo(os.environ['SUPABASE_DB_HOST'], 5432, socket.AF_INET)[0][4][0])")
           TABLE_COUNT=$(psql -h "$DB_IP" -p 5432 -U postgres -d postgres \
             -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';" | xargs)
           echo "Tables restored: $TABLE_COUNT"

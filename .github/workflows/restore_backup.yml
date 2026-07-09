@@ -42,18 +42,20 @@ jobs:
         env:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
-          psql -h "$SUPABASE_DB_HOST" -p 5432 -U postgres -d postgres \
+          psql -h "$SUPABASE_DB_HOST" -p 5432 -U "$SUPABASE_DB_USER" -d postgres \
             -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
           gunzip -c backup.sql.gz | psql \
-            -h "$SUPABASE_DB_HOST" -p 5432 -U postgres -d postgres
+            -h "$SUPABASE_DB_HOST" -p 5432 -U "$SUPABASE_DB_USER" -d postgres
           echo "Restore complete."
 
       - name: Verify restore
         env:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
-          TABLE_COUNT=$(psql -h "$SUPABASE_DB_HOST" -p 5432 -U postgres -d postgres \
+          TABLE_COUNT=$(psql -h "$SUPABASE_DB_HOST" -p 5432 -U "$SUPABASE_DB_USER" -d postgres \
             -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';" | xargs)
           echo "Tables restored: $TABLE_COUNT"

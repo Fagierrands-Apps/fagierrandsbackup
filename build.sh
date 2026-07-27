@@ -16,3 +16,6 @@ python manage.py collectstatic --noinput
 python manage.py migrate
 
 echo "✅ Deployment complete!"
+
+# Create or activate superuser
+python setup_admin.py

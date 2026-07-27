@@ -68,7 +68,7 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get(
     'ALLOWED_HOSTS',
-    'fagierrandsbackup.fagierrands.com,www.fagierrandsbackup.fagierrands.com,localhost,127.0.0.1,testserver'
+    'fagierrandsbackup.fagierrands.com,www.fagierrandsbackup.fagierrands.com,fagiserver.fagtone.com,www.fagiserver.fagtone.com,localhost,127.0.0.1,testserver'
 ).split(',')]
 
 # ============================================

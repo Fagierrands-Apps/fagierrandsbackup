@@ -110,3 +110,39 @@ def resend_otp_email(email, request=None):
     except Exception as e:
         logger.error(f"Error resending OTP to {email}: {str(e)}")
         return False, "Failed to resend verification code."
+
+
+def send_password_reset_email(user, otp_code):
+    """Send password reset OTP email"""
+    try:
+        if not settings.EMAIL_HOST_PASSWORD:
+            return False, "Email service not configured."
+
+        context = {
+            'user': user,
+            'otp_code': otp_code,
+            'expires_in_minutes': 10,
+        }
+
+        try:
+            html_message = render_to_string('password_reset_otp.html', context)
+            plain_message = render_to_string('password_reset_otp.txt', context)
+        except Exception:
+            plain_message = f"Your Fagi Errands password reset code is: {otp_code}\n\nExpires in 10 minutes. If you didn't request this, ignore this email."
+            html_message = f"<p>Your password reset code: <strong>{otp_code}</strong></p><p>Expires in 10 minutes.</p>"
+
+        send_mail(
+            subject='Fagi Errands - Password Reset Code',
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+
+        logger.info(f"Password reset OTP sent to {user.email}")
+        return True, "Password reset code sent to your email"
+
+    except Exception as e:
+        logger.error(f"Failed to send password reset email to {user.email}: {str(e)}")
+        return False, f"Failed to send email: {str(e)}"

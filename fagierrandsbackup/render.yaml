@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: fagierrandsbackup
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn fagierrandsbackup.wsgi --log-file -"
+    envVars:
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: EMAIL_HOST
+        value: smtp-relay.brevo.com
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        value: no-reply@fagitone.com
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

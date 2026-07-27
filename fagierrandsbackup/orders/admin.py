@@ -797,7 +797,7 @@ class BankingOrderAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
 
 # Register models from models_updated.py if they were successfully imported
-if models_updated_imported:
+if models_updated_imported and not OrderTracking._meta.abstract:
     @admin.register(OrderTracking)
     class OrderTrackingAdmin(admin.ModelAdmin):
         list_display = ('order', 'current_latitude', 'current_longitude', 'last_updated', 'estimated_arrival_time')

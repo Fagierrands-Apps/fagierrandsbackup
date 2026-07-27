@@ -26,14 +26,19 @@ schema_view = get_schema_view(
 
 
 def robots_txt(request):
-    """Serve static robots.txt file"""
     return serve(request, "robots.txt", document_root=os.path.join(settings.BASE_DIR, "static"))
+
+
+def favicon(request):
+    return serve(request, "favicon.ico", document_root=os.path.join(settings.BASE_DIR, "static"))
 
 
 urlpatterns = [
     path('robots.txt', robots_txt),
-    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=True)),
-    path('', deployment_check_view, name='root'),  # Root URL for deployment check
+    path('favicon.ico', favicon),
+    # Redirect legacy frontend endpoint to correct one
+    path('api/auth/user/', RedirectView.as_view(url='/api/accounts/user/', permanent=True, query_string=True)),
+    path('', deployment_check_view, name='root'),
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.urls')),
     path('api/orders/', include('orders.urls')),
@@ -42,9 +47,7 @@ urlpatterns = [
     path('api/dashboard/', include('admin_dashboard.urls')),
     path('api/voice/', include('voice.urls')),
     path('api/marketplace/', include('marketplace.urls')),
-    # App meta
     path('api/app/meta/versions/', AppVersionsView.as_view(), name='app-versions'),
-    # Docs
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui-docs'),

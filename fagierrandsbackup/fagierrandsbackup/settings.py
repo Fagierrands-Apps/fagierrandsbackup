@@ -68,7 +68,7 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get(
     'ALLOWED_HOSTS',
-    'fagierrandsbackup.fagierrands.com,localhost,127.0.0.1,testserver'
+    'fagierrandsbackup.fagierrands.com,www.fagierrandsbackup.fagierrands.com,localhost,127.0.0.1,testserver'
 ).split(',')]
 
 # ============================================
@@ -135,6 +135,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'fagierrandsbackup.middleware.RateLimitMiddleware',  # Rate limiting (first)
+    'fagierrandsbackup.middleware.BlockScannerMiddleware',  # Block scanners/probes
     'fagierrandsbackup.logging_middleware.ComprehensiveLoggingMiddleware',  # Logging
     'fagierrandsbackup.middleware.BlockInsecureMethodsMiddleware',
     'fagierrandsbackup.middleware.CorsMiddleware',
@@ -296,6 +297,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Caching Configuration
 CACHES = {

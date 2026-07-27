@@ -46,16 +46,16 @@ def is_token_blacklisted(token_str):
     try:
         token = AccessToken(token_str)
         jti = str(token['jti'])
-        
+
         is_blacklisted = cache.get(f'blacklist_{jti}', False)
-        
+
         if is_blacklisted:
             logger.warning(f"Blacklisted token used: {jti[:8]}...")
-        
+
         return is_blacklisted
-        
-    except Exception as e:
-        logger.error(f"Token check error: {e}")
+
+    except Exception:
+        # Token is invalid/expired — no need to log, JWT auth will handle it
         return True  # Block invalid tokens
 
 

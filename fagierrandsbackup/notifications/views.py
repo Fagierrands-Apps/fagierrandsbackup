@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.core.cache import cache
 from django.utils import timezone
 import json
 import logging
@@ -21,22 +22,14 @@ class NotificationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        """
-        Return notifications for the currently authenticated user.
-        """
-        try:
-            # Check if user is authenticated
-            if not self.request.user.is_authenticated:
-                return Notification.objects.none()
-            
-            return Notification.objects.filter(recipient=self.request.user).order_by('-created_at')
-        except Exception as e:
-            # Log the error for debugging
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Error in get_queryset: {e}")
-            # Return empty queryset if there's an error
+        if not self.request.user.is_authenticated:
             return Notification.objects.none()
+        return (
+            Notification.objects
+            .filter(recipient=self.request.user)
+            .only('id', 'title', 'message', 'notification_type', 'read', 'created_at')
+            .order_by('-created_at')
+        )
     
     def list(self, request, *args, **kwargs):
         """
@@ -101,28 +94,25 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def mark_all_as_read(self, request):
-        """
-        Mark all notifications as read for the current user.
-        """
         self.get_queryset().update(read=True)
+        cache.delete(f'notif_unread_{request.user.id}')
         return Response({'status': 'All notifications marked as read'}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'])
     def mark_as_read(self, request, pk=None):
-        """
-        Mark a specific notification as read.
-        """
         notification = get_object_or_404(self.get_queryset(), pk=pk)
         notification.read = True
         notification.save()
+        cache.delete(f'notif_unread_{request.user.id}')
         return Response({'status': 'Notification marked as read'}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
     def unread_count(self, request):
-        """
-        Get count of unread notifications for the current user.
-        """
-        count = self.get_queryset().filter(read=False).count()
+        cache_key = f'notif_unread_{request.user.id}'
+        count = cache.get(cache_key)
+        if count is None:
+            count = Notification.objects.filter(recipient=request.user, read=False).count()
+            cache.set(cache_key, count, 60)
         return Response({'unread_count': count}, status=status.HTTP_200_OK)
 
 

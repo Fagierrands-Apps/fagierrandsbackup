@@ -48,18 +48,15 @@ VERIFICATION_BUCKET = 'user-uploads'
 def ensure_bucket_exists(bucket_name):
     """
     Ensure that a Supabase storage bucket exists.
-    Silently handles RLS errors to avoid log spam.
+    Silently handles errors to avoid log spam.
     """
     if not supabase:
         return False
-        
     try:
         supabase.storage.get_bucket(bucket_name)
         return True
     except Exception:
-        # Bucket might exist but we can't create it due to RLS
-        # Silently assume it exists to avoid error spam
-        return True
+        return True  # Assume exists, RLS may block listing
 
 # Call this when your Django app starts
 def initialize_supabase_storage():

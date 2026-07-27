@@ -28,6 +28,8 @@ from .supabase_client import get_supabase_client
 from .permissions import IsOwnerOrReadOnly, IsHandler, IsAdmin
 import json
 import logging
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 logger = logging.getLogger(__name__)
 
@@ -173,15 +175,19 @@ def simple_login(request):
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
-    
-    def options(self, request, *args, **kwargs):
-        response = Response({})
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        response["Access-Control-Max-Age"] = "86400"  # 24 hours
-        return response
-    
+
+    @swagger_auto_schema(
+        operation_description="Login with email and password",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["email", "password"],
+            properties={
+                "email": openapi.Schema(type=openapi.TYPE_STRING, example="user@example.com"),
+                "password": openapi.Schema(type=openapi.TYPE_STRING, example="yourpassword"),
+            },
+        ),
+        responses={200: "Login successful", 400: "Bad request", 404: "User not found"},
+    )
     def post(self, request):
         try:
             print("LoginView: Received login request")

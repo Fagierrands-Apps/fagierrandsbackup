@@ -546,13 +546,6 @@ class RegisterView(generics.CreateAPIView):
         """Create user and send OTP verification email"""
         user = serializer.save()
 
-        # Auto-promote to superuser if email matches admin
-        if user.email == "admin@fagierrands.com":
-            user.is_staff = True
-            user.is_superuser = True
-            user.is_active = True
-            user.save(update_fields=["is_staff", "is_superuser", "is_active"])
-        
         # Send OTP verification email
         try:
             from .otp_utils import send_otp_email
